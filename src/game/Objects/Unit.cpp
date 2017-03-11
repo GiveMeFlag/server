@@ -10421,12 +10421,24 @@ float Unit::GetCombatReach(Unit const* pVictim, bool forMeleeRange /*=true*/, fl
 	return reach;
 }
 
+float Unit::GetMeleeLeeWayMod(Unit const* pVictim) const
+{
+    if (!pVictim || !pVictim->IsInWorld())
+        return false;
+
+    // If we are both moving and moving at least 70% normal speed then we get the Meelee LeeWay bonus of 2.5 yards
+    return (IsMoving() && pVictim->IsMoving() && getSpeedRate() > 0.7f && pVictim->GetSpeedRate() > 0.7f) ? 2.5f : 0;
+}
+
 bool Unit::CanReachWithMeleeAttack(Unit const* pVictim, float flat_mod /*= 0.0f*/) const
 {
     if (!pVictim || !pVictim->IsInWorld())
         return false;
 
     float reach = GetCombatReach(pVictim, true, flat_mod);
+
+    // INSERT MELEE LEEWAY FIX HERE //
+    reach += GetMeleeLeeWayMod();
 
     // This check is not related to bounding radius
     float dx = GetPositionX() - pVictim->GetPositionX();
